@@ -41,7 +41,12 @@ class SnowflakeHook(BaseHook, LoggingMixin):
             warehouse=self.warehouse
         )
 
-    def pipe_insert_report(self, pipe, database=None, schema=None):
+    def pipe_insert_report(self,
+                           pipe,
+                           database=None,
+                           schema=None,
+                           request_id=None):
+
         database = database or self.database
         schema = schema or self.schema
         if self.private_key_password:
@@ -68,9 +73,12 @@ class SnowflakeHook(BaseHook, LoggingMixin):
                 auth_token.decode('UTF-8')),
             'Accept': 'application/json',
             'Content-Type': 'application/json'}
+        params = None
+        if request_id:
+            params = {'requestId': request_id}
         self.log.debug('executing pipe: {0}'.format(uri))
         self.log.debug('with headers {0}:'.format(headers))
-        resp = requests.get(uri, headers=headers)
+        resp = requests.get(uri, headers=headers, params=params)
         self.log.info('pipe response: {0}'.format(resp.json()))
         return resp.json()
 
